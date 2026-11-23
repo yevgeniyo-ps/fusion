@@ -1,0 +1,12 @@
+node_modules/
+dist/
+src-tauri/target/
+src-tauri/gen/
+.DS_Store
+*.tsbuildinfo
+__pycache__/
+.vscode/
+.idea/
+.env
+.env.*
+*.pem

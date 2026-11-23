@@ -23,6 +23,8 @@ export interface Tab {
   widths?: number[];
   /** The code area's share of the height, this tab's own; the terminal has the rest. */
   split?: number;
+  /** The file open in each project's pane, by project path: it opens again after a restart. */
+  files?: Record<string, string | null>;
 }
 
 export interface Layout {

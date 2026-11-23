@@ -4,6 +4,8 @@ A lightweight macOS IDE where a **tab is a mix of repos**. Drag two or three che
 
 Built with Tauri 2 (Rust + the system WebKit), React, CodeMirror 6 and xterm.js. The app is about 6 MB.
 
+![A Fusion tab that mixes two repos: storefront and payments-api side by side, each with its file tree and an inline diff against HEAD, and one terminal under them](docs/images/fusion-tab.png)
+
 ## Install
 
 Fusion runs on Apple Silicon Macs with macOS 13 or later.
@@ -63,13 +65,15 @@ Dev and release builds share the same data folder, so quit one before starting t
 
 **Terminal tabs** — ⌘⇧T opens a tab of plain shells. Split like iTerm: ⌘D right, ⌘⇧D down, ⌘] / ⌘[ to move between panes, ⌘⇧↩ to zoom one.
 
+![A terminal tab split in two: git log and diff in one shell, git status in the other](docs/images/fusion-terminals.png)
+
 **Zoom a block** — double-click any pane, terminal or split to fill the tab with it; double-click again to bring the layout back.
 
 **Code panes** — file tree with git colours, editor with an inline diff against HEAD (green/red, ⌥F5 for the next change, *revert* per chunk). Files reload when they change on disk, so you watch Claude's edits as they happen, and save themselves a second after you type. **Search** (⌘⇧F) finds text in the whole project, with match case, whole word and regular expressions; `.gitignore` is honoured. The branch chip switches branches, checks out remote ones, and creates a branch (and pushes it). The GitHub button opens the file at the cursor's line (⌥-click copies the link); right-click a line for **Open on GitHub**. Drag the line between panes to resize them.
 
 **Terminal header** — **pull** runs `git pull` in the tab's projects (it lights up blue with a ↓ count when the remote has new commits; Fusion fetches quietly every 3 minutes). When claude or another program is in the terminal, the pull runs in the background instead (fast-forward only) and lists the result per project. **snap** (⌘⇧2) captures a screen area to the clipboard and pastes its path into the terminal. **claude** starts the tab's session. While claude runs, the header counts its tokens and what they would cost at Claude API list prices.
 
-**Restore** — on restart, every terminal comes back in its folder and runs what it was running (`watch …`, `claude`, a pipeline). A `sudo` command is typed but not run.
+**Restore** — on restart, every terminal comes back in its folder and runs what it was running (`watch …`, `claude`, a pipeline), and each pane opens its file again. A `sudo` command is typed but not run.
 
 | Keys | |
 |---|---|

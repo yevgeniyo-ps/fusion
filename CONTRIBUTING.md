@@ -27,7 +27,7 @@ Run what CI runs before you open a pull request:
 ```sh
 npx tsc -b                 # type check
 npm run build              # frontend build
-cd src-tauri && cargo test # Rust tests
+cd src-tauri && cargo clippy --all-targets -- -D warnings && cargo test # Rust lint and tests
 ```
 
 If you change the UI, describe what you checked by hand in the app, and add a screenshot or short recording to the pull request.

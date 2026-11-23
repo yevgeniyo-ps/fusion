@@ -12,6 +12,13 @@ Report it privately with GitHub's [private vulnerability reporting](https://gith
 
 You will get a reply within 7 days. Once a fix is released, the advisory is published and you are credited, unless you ask not to be.
 
+## How the repo is protected
+
+- `main` takes changes only through pull requests that pass CI; force pushes and deletion are blocked.
+- Release tags (`v*`) cannot be moved or deleted.
+- Secret scanning with push protection, Dependabot alerts and security updates, and CodeQL code scanning are on.
+- GitHub Actions are pinned to commit SHAs, run with read-only tokens, and need approval for first-time contributors.
+
 ## Supported versions
 
 Only the latest release gets security fixes.

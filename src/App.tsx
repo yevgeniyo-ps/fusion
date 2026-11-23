@@ -331,6 +331,7 @@ export function App() {
                 onSplit={(split) => update((l) => ({ ...l, tabs: l.tabs.map((x) => (x.id === t.id ? { ...x, split } : x)) }))}
                 onRemove={(path) => removeFromTab(t.id, path)}
                 onWidths={(widths) => update((l) => ({ ...l, tabs: l.tabs.map((x) => (x.id === t.id ? { ...x, widths } : x)) }))}
+                onFile={(path, file) => update((l) => ({ ...l, tabs: l.tabs.map((x) => (x.id === t.id ? { ...x, files: { ...x.files, [path]: file } } : x)) }))}
               />
               ),
             )}

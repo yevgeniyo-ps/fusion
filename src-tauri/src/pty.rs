@@ -62,6 +62,8 @@ fn decode(carry: &mut Vec<u8>, chunk: &[u8]) -> String {
     }
 }
 
+// A Tauri command takes its arguments one by one from the UI's call, not as a struct.
+#[allow(clippy::too_many_arguments)]
 #[tauri::command]
 pub fn pty_spawn(
     app: AppHandle,

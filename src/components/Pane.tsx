@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../api";
 import type { GitStatus, Project } from "../types";
 import { Changes } from "../lib/changes";
@@ -26,6 +26,8 @@ export function Pane({
   zoomed,
   hidden,
   live,
+  file: openFile,
+  onFile,
   onZoom,
 }: {
   project: Project;
@@ -34,9 +36,19 @@ export function Pane({
   hidden: boolean;
   /** The pane's tab is open. */
   live: boolean;
+  /** The file open when the pane appears (the one saved in the tab), and each change of it. */
+  file: string | null;
+  onFile: (path: string | null) => void;
   onZoom: () => void;
 }) {
-  const [file, setFile] = useState<string | null>(null);
+  const [file, setFile] = useState<string | null>(openFile);
+  const onFileRef = useRef(onFile);
+  onFileRef.current = onFile;
+  useEffect(() => {
+    if (file !== openFile) onFileRef.current(file);
+    // Only a new file is saved; the saved one coming back is not.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [file]);
   // ⌘⇧F in this pane opens the search; a result opens its file at the line.
   const [searchKey, setSearchKey] = useState(0);
   const [jump, setJump] = useState<(Jump & { n: number }) | null>(null);

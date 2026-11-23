@@ -1,7 +1,7 @@
 // One set of thin line icons (16 px, 1.5 stroke).
 
 type IconName =
-  | "chevron" | "chevrons" | "close" | "plus" | "folder" | "file" | "branch" | "clone" | "tree" | "terminal" | "spark" | "camera" | "splitRight" | "splitDown" | "github" | "folderPlus" | "pull" | "check" | "maximize" | "pencil" | "select" | "more" | "sort" | "search";
+  | "chevron" | "chevrons" | "close" | "plus" | "folder" | "branch" | "clone" | "tree" | "terminal" | "spark" | "camera" | "splitRight" | "splitDown" | "github" | "folderPlus" | "pull" | "check" | "maximize" | "pencil" | "select" | "more" | "sort" | "search";
 
 const ICONS: Record<IconName, React.ReactNode> = {
   chevron: <path d="m6 4 4 4-4 4" />,
@@ -9,7 +9,6 @@ const ICONS: Record<IconName, React.ReactNode> = {
   close: <path d="m4.5 4.5 7 7M11.5 4.5l-7 7" />,
   plus: <path d="M8 3.25v9.5M3.25 8h9.5" />,
   folder: <path d="M2.25 4.5c0-.7.55-1.25 1.25-1.25h2.6l1.5 1.5h4.9c.7 0 1.25.55 1.25 1.25v5.5c0 .7-.55 1.25-1.25 1.25h-9c-.7 0-1.25-.55-1.25-1.25z" />,
-  file: <><path d="M4 2.25h5l3 3v8.5H4z" /><path d="M9 2.25v3h3" /></>,
   branch: <><circle cx="4.5" cy="3.75" r="1.5" /><circle cx="4.5" cy="12.25" r="1.5" /><circle cx="11.5" cy="5.25" r="1.5" /><path d="M4.5 5.25v5.5M11.5 6.75c0 2.5-2 3-5 4" /></>,
   clone: <><path d="M4.25 2.25h7.5v9.5h-7.5a1.5 1.5 0 0 0-1.5 1.5V3.75a1.5 1.5 0 0 1 1.5-1.5Z" /><path d="M2.75 13.25a1.5 1.5 0 0 0 1.5 1.5h7.5v-3" /><path d="M8 4.5v4M6.25 6.75 8 8.5l1.75-1.75" /></>,
   folderPlus: <><path d="M2.25 4.5c0-.7.55-1.25 1.25-1.25h2.6l1.5 1.5h4.9c.7 0 1.25.55 1.25 1.25v5.5c0 .7-.55 1.25-1.25 1.25h-9c-.7 0-1.25-.55-1.25-1.25z" /><path d="M8 7v3.5M6.25 8.75h3.5" /></>,

@@ -16,11 +16,12 @@ interface Props {
   onSplit: (split: number) => void;
   onRemove: (path: string) => void;
   onWidths: (widths: number[]) => void;
+  onFile: (project: string, file: string | null) => void;
 }
 
 /** One tab: a pane per project side by side, the terminal under them. Hidden tabs stay
  *  mounted, so their shells and editors keep running. */
-export function Workspace({ tab, name, projects, active, split, onSplit, onRemove, onWidths }: Props) {
+export function Workspace({ tab, name, projects, active, split, onSplit, onRemove, onWidths, onFile }: Props) {
   const { isOver, setNodeRef } = useDroppable({ id: `ws:${tab.id}` });
   const [dir, setDir] = useState<string | null>(null);
   const box = useRef<HTMLDivElement>(null);
@@ -113,6 +114,8 @@ export function Workspace({ tab, name, projects, active, split, onSplit, onRemov
                   zoomed={zoom === p.path}
                   hidden={hidden}
                   live={active}
+                  file={tab.files?.[p.path] ?? null}
+                  onFile={(f) => onFile(p.path, f)}
                   onZoom={() => toggle(p.path)}
                 />
               </div>

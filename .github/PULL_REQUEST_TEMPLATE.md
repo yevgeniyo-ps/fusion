@@ -8,4 +8,4 @@
 
 - [ ] `npx tsc -b`
 - [ ] `npm run build`
-- [ ] `cd src-tauri && cargo test`
+- [ ] `cd src-tauri && cargo clippy --all-targets -- -D warnings && cargo test`

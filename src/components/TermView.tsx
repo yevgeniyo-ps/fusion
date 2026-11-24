@@ -19,11 +19,11 @@ export interface TermHandle {
 interface Props {
   /** The PTY's id: the tab id for a project tab, the pane id in a terminal tab. */
   ptyId: string;
-  /** A plain shell in the home folder (terminal tab) instead of the tab folder. */
+  /** A plain shell in `cwd` (terminal tab) instead of the tab folder. */
   plain: boolean;
   /** False until the shell can start (a project tab waits for its tab folder). */
   ready: boolean;
-  /** Where a plain shell starts; the home folder when unset. */
+  /** Where a plain shell starts; the home folder when unset or missing. */
   cwd?: string;
   /** Fit and focus when this becomes true (the tab opens, the pane is picked). */
   focused: boolean;

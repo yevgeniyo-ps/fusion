@@ -14,6 +14,7 @@ interface Props {
   onClone: () => void;
   onAddFolder: () => void;
   onImport: () => void;
+  onSettings: () => void;
   /** Removes projects from Fusion (and from the tabs that have them); their folders stay. */
   onRemove: (ps: Project[]) => void;
   /** A new tab with these projects. */
@@ -25,7 +26,7 @@ interface Props {
  *  group's header to move it in, onto a member to place it there, onto Ungrouped to take it
  *  out. A click picks a project; with some picked, a bar opens them in a new tab, groups or
  *  removes them. Select adds checkboxes and All, for many at once. */
-export function Sidebar({ projects, home, groups, onGroups, onFold, onClone, onAddFolder, onImport, onRemove, onOpen }: Props) {
+export function Sidebar({ projects, home, groups, onGroups, onFold, onClone, onAddFolder, onImport, onSettings, onRemove, onOpen }: Props) {
   const [q, setQ] = useState("");
   const [selecting, setSelecting] = useState(false);
   const [picked, setPicked] = useState<Set<string>>(() => new Set());
@@ -225,6 +226,9 @@ export function Sidebar({ projects, home, groups, onGroups, onFold, onClone, onA
           </div>
         </div>
       )}
+      <div className="flex shrink-0 items-center border-t border-white/[0.12] px-2.5 py-1.5">
+        <HeadButton icon="settings" title="Settings" onClick={onSettings} />
+      </div>
       {menu && open && (
         <GroupMenu
           group={open}
@@ -422,7 +426,7 @@ function HeadButton({
   onClick,
   on,
 }: {
-  icon: "clone" | "folderPlus" | "github" | "select";
+  icon: "clone" | "folderPlus" | "github" | "select" | "settings";
   title: string;
   onClick: () => void;
   on?: boolean;

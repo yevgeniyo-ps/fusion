@@ -1,7 +1,7 @@
 {
   "name": "fusion",
   "private": true,
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "A lightweight macOS IDE where a tab is a mix of repos, with a Claude terminal scoped to them",
   "license": "MIT",
   "repository": {

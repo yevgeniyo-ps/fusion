@@ -11,6 +11,7 @@ import { ProjectCard, Sidebar } from "./components/Sidebar";
 import { TabBar } from "./components/TabBar";
 import { Workspace } from "./components/Workspace";
 import { CloneDialog } from "./components/CloneDialog";
+import { SettingsDialog } from "./components/SettingsDialog";
 import { ImportDialog } from "./components/ImportDialog";
 import { TermTab } from "./components/TermTab";
 import { SessionNames } from "./components/SessionName";
@@ -31,6 +32,7 @@ export function App() {
   const [draggingTab, setDraggingTab] = useState<string | null>(null);
   const [draggingGroup, setDraggingGroup] = useState<string | null>(null);
   const [cloning, setCloning] = useState(false);
+  const [settings, setSettings] = useState(false);
   const [importing, setImporting] = useState(false);
   const [sidebar, setSidebar] = useState(() => {
     try {
@@ -291,6 +293,7 @@ export function App() {
             onClone={() => setCloning(true)}
             onAddFolder={addFolder}
             onImport={() => setImporting(true)}
+            onSettings={() => setSettings(true)}
             onRemove={removeProjects}
             onOpen={(paths) => newTab(paths)}
             groups={layout.groups ?? []}
@@ -357,6 +360,18 @@ export function App() {
         />
       )}
       {importing && <ImportDialog open onClose={() => setImporting(false)} onProject={(p) => addProject(p, false)} />}
+      {/* The sidebar has the gear; folded, it stays in the corner. */}
+      {!sidebar && (
+        <button
+          onClick={() => setSettings(true)}
+          title="Settings"
+          aria-label="Settings"
+          className="fixed bottom-2 left-2.5 z-40 flex h-[22px] w-[22px] items-center justify-center rounded-[4px] text-text hover:bg-[#2a2d2e]"
+        >
+          <Icon name="settings" className="h-4 w-4" />
+        </button>
+      )}
+      {settings && <SettingsDialog onClose={() => setSettings(false)} />}
       <CloneDialog open={cloning} canAddToTab={!!layout.active} onClose={() => setCloning(false)} onDone={addProject} />
     </DndContext>
     </SessionNames.Provider>

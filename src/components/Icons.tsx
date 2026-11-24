@@ -1,7 +1,7 @@
 // One set of thin line icons (16 px, 1.5 stroke).
 
-type IconName =
-  | "chevron" | "chevrons" | "close" | "plus" | "folder" | "branch" | "clone" | "tree" | "terminal" | "spark" | "camera" | "splitRight" | "splitDown" | "github" | "folderPlus" | "pull" | "check" | "maximize" | "pencil" | "select" | "more" | "sort" | "search";
+export type IconName =
+  | "chevron" | "chevrons" | "close" | "plus" | "folder" | "branch" | "clone" | "tree" | "terminal" | "spark" | "camera" | "splitRight" | "splitDown" | "github" | "folderPlus" | "pull" | "check" | "maximize" | "pencil" | "select" | "more" | "sort" | "search" | "settings";
 
 const ICONS: Record<IconName, React.ReactNode> = {
   chevron: <path d="m6 4 4 4-4 4" />,
@@ -25,6 +25,7 @@ const ICONS: Record<IconName, React.ReactNode> = {
   select: <><rect x="2.25" y="2.75" width="4.5" height="4.5" rx="1" /><path d="m3.25 5 1 1 1.75-2" /><rect x="2.25" y="9" width="4.5" height="4.5" rx="1" /><path d="M9 5h4.75M9 11.25h4.75" /></>,
   more: <><circle cx="3.5" cy="8" r="1" fill="currentColor" stroke="none" /><circle cx="8" cy="8" r="1" fill="currentColor" stroke="none" /><circle cx="12.5" cy="8" r="1" fill="currentColor" stroke="none" /></>,
   sort: <path d="M4.5 3v10M2.5 11 4.5 13l2-2M9 4h4.5M9 8h3.25M9 12h2" />,
+  settings: <><circle cx="8" cy="8" r="2" /><path d="M6.9 1.75h2.2l.35 1.75 1.3.75 1.7-.55 1.1 1.9-1.35 1.2v1.5l1.35 1.2-1.1 1.9-1.7-.55-1.3.75-.35 1.75H6.9l-.35-1.75-1.3-.75-1.7.55-1.1-1.9 1.35-1.2V7.2L2.45 6l1.1-1.9 1.7.55 1.3-.75z" /></>,
   search: <><circle cx="7" cy="7" r="4.25" /><path d="m10.25 10.25 3 3" /></>,
   spark: <path d="M8 2.25c.45 2.9 1.85 4.3 4.75 4.75-2.9.45-4.3 1.85-4.75 4.75C7.55 8.85 6.15 7.45 3.25 7 6.15 6.55 7.55 5.15 8 2.25Z" />,
 };

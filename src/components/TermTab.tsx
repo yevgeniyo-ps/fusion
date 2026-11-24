@@ -10,6 +10,7 @@ import { TokenBadge } from "./TokenBadge";
 import { useClaudeUsage } from "../lib/usage";
 import { Grip } from "./Grip";
 import { blockDoubleClick, useZoomMotion } from "../lib/zoomPane";
+import { loadTermDir } from "../lib/settings";
 
 interface Props {
   tab: Tab;
@@ -227,7 +228,7 @@ function TermPane({
           </button>
         </span>
       </header>
-      <TermView ptyId={id} plain ready focused={focused} onHandle={onHandle} onTitle={onTitle} onFocus={onFocus} />
+      <TermView ptyId={id} plain ready cwd={loadTermDir()} focused={focused} onHandle={onHandle} onTitle={onTitle} onFocus={onFocus} />
       {/* The panes you are not in are dimmed, as in iTerm. */}
       {!focused && <div className="pointer-events-none absolute inset-0 top-7 bg-black/25" />}
     </section>

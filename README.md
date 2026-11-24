@@ -13,8 +13,8 @@ Fusion runs on Apple Silicon Macs with macOS 13 or later.
 ### From the release (no build tools)
 
 ```sh
-gh release download v0.2.3 -R yevgeniyo-ps/fusion -p '*.dmg'
-open Fusion_0.2.3_aarch64.dmg
+gh release download v0.2.4 -R yevgeniyo-ps/fusion -p '*.dmg'
+open Fusion_0.2.4_aarch64.dmg
 ```
 
 Drag **Fusion** to **Applications**, then open it from Launchpad or Spotlight.

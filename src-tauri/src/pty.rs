@@ -1,7 +1,8 @@
 // Shells in real PTYs. A project tab's shell starts in the tab folder (tab.rs), with the
-// claude wrapper first on PATH. A terminal tab's panes are plain shells in the home folder.
+// claude wrapper first on PATH. A terminal tab's panes are plain shells in the folder
+// set in Settings (~/code at first), or the home folder.
 
-use crate::projects::{err, home};
+use crate::projects::{err, expand, home};
 use crate::session;
 use crate::tab::tab_dir;
 use portable_pty::{native_pty_system, Child, CommandBuilder, MasterPty, PtySize};
@@ -73,7 +74,8 @@ pub fn pty_spawn(
     rows: u16,
     // A plain shell: the home folder, no tab folder, no claude wrapper.
     plain: bool,
-    // Session restore: the folder to start in, and the command to run again in it.
+    // The folder to start in (session restore, a project, Settings; `~/` allowed), and the
+    // command to run again in it.
     cwd: Option<String>,
     run: Option<String>,
     on_event: Channel<PtyEvent>,
@@ -91,7 +93,7 @@ pub fn pty_spawn(
     let shell = std::env::var("SHELL").unwrap_or_else(|_| "/bin/zsh".into());
     let mut cmd = CommandBuilder::new(&shell);
     cmd.arg("-l");
-    let start = cwd.map(std::path::PathBuf::from).filter(|p| p.is_dir()).unwrap_or_else(|| dir.clone());
+    let start = cwd.map(|c| expand(&c)).filter(|p| p.is_dir()).unwrap_or_else(|| dir.clone());
     cmd.cwd(&start);
     cmd.env("TERM", "xterm-256color");
     cmd.env("COLORTERM", "truecolor");

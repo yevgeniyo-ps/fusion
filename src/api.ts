@@ -65,7 +65,7 @@ export const api = {
 
   /** The Claude tokens of a terminal's session; null before its first reply. */
   claudeUsage: (id: string, plain: boolean, cwd: string | null) => invoke<Usage | null>("claude_usage", { id, plain, cwd }),
-  /** `plain`: a shell in the home folder (a terminal tab's pane), not in the tab folder. */
+  /** `plain`: a shell in `cwd`, else the home folder (a terminal tab's pane), not in the tab folder. */
   ptySpawn: (id: string, cols: number, rows: number, plain: boolean, cwd: string | null, run: string | null, onEvent: Channel<PtyEvent>) =>
     invoke<void>("pty_spawn", { id, cols, rows, plain, cwd, run, onEvent }),
   /** What each shell runs now: its folder and its foreground command. */

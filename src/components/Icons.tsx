@@ -1,10 +1,12 @@
 // One set of thin line icons (16 px, 1.5 stroke).
 
 export type IconName =
-  | "chevron" | "chevrons" | "close" | "plus" | "folder" | "branch" | "clone" | "tree" | "terminal" | "spark" | "camera" | "splitRight" | "splitDown" | "github" | "folderPlus" | "pull" | "check" | "maximize" | "pencil" | "select" | "more" | "sort" | "search" | "settings" | "note" | "code" | "codeBlock";
+  | "chevron" | "chevrons" | "close" | "plus" | "folder" | "branch" | "clone" | "tree" | "terminal" | "spark" | "camera" | "splitRight" | "splitDown" | "github" | "folderPlus" | "pull" | "check" | "maximize" | "pencil" | "select" | "more" | "sort" | "search" | "settings" | "note" | "code" | "codeBlock" | "atlantis";
 
 const ICONS: Record<IconName, React.ReactNode> = {
   chevron: <path d="m6 4 4 4-4 4" />,
+  // A temple: roof, three columns, a base.
+  atlantis: <path d="M2.5 5.75 8 2.5l5.5 3.25M3.5 5.75h9M4.75 7.5v4.5M8 7.5v4.5M11.25 7.5v4.5M2.5 13.5h11" />,
   code: <path d="M5.5 4.5 2 8l3.5 3.5M10.5 4.5 14 8l-3.5 3.5M9 3.5l-2 9" />,
   codeBlock: <><path d="M10 2.5h2a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H4A1.5 1.5 0 0 1 2.5 12V4A1.5 1.5 0 0 1 4 2.5h1" /><path d="M6 6.5 4.75 8 6 9.5M10 6.5 11.25 8 10 9.5M8.75 5.5l-1.5 5" /></>,
   chevrons: <path d="M3.5 4l4 4-4 4M8.5 4l4 4-4 4" />,

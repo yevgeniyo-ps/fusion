@@ -4,6 +4,8 @@ import type { GitStatus, Project } from "../types";
 import { Changes } from "../lib/changes";
 import { FileTree } from "./FileTree";
 import { Editor } from "./Editor";
+import { useSetting } from "../lib/settings";
+import { AtlantisLogo } from "./AtlantisPanel";
 import { Icon } from "./Icons";
 import { ZoomBadge } from "./ZoomBadge";
 import { BranchChip } from "./BranchMenu";
@@ -29,6 +31,8 @@ export function Pane({
   file: openFile,
   onFile,
   onZoom,
+  atlantis,
+  onAtlantis,
 }: {
   project: Project;
   onRemove: () => void;
@@ -40,6 +44,9 @@ export function Pane({
   file: string | null;
   onFile: (path: string | null) => void;
   onZoom: () => void;
+  /** This project's Atlantis panel is open (at the right of the tab). */
+  atlantis: boolean;
+  onAtlantis: () => void;
 }) {
   const [file, setFile] = useState<string | null>(openFile);
   const onFileRef = useRef(onFile);
@@ -58,6 +65,13 @@ export function Pane({
   };
   const [dirty, setDirty] = useState(false);
   const [tree, setTree] = useState(true);
+  // The Atlantis plugin (Settings): a repo with atlantis.yaml gets its button.
+  const atlantisOn = useSetting("atlantis");
+  const [hasAtlantis, setHasAtlantis] = useState(false);
+  useEffect(() => {
+    if (!atlantisOn) return;
+    api.readFile(`${project.path}/atlantis.yaml`).then(() => setHasAtlantis(true), () => setHasAtlantis(false));
+  }, [project.path, atlantisOn]);
   const lines = useRef<[number, number] | null>(null);
   const [linkNote, setLinkNote] = useState<string | null>(null);
 
@@ -126,6 +140,15 @@ export function Pane({
               className="rounded-md p-1 text-faint hover:bg-hover hover:text-fg"
             >
               <Icon name="github" className="h-3.5 w-3.5" />
+            </button>
+          )}
+          {atlantisOn && hasAtlantis && (
+            <button
+              onClick={onAtlantis}
+              title="Atlantis: plan, apply and merge this branch's PR"
+              className={["rounded-md p-1 hover:bg-hover", atlantis ? "bg-white/[0.1]" : "opacity-80 hover:opacity-100"].join(" ")}
+            >
+              <AtlantisLogo className="h-4 w-4" />
             </button>
           )}
           <button onClick={() => setTree((v) => !v)} title="Show or hide the file tree" className={toggleClass(tree)}>

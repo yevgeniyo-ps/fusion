@@ -11,10 +11,12 @@ export type Split =
 
 export interface Tab {
   id: string;
-  /** "terminal": only split shells, no projects. Unset: a project tab. */
-  kind?: "terminal";
+  /** "terminal": only split shells, no projects. "note": a blank text page. Unset: a project tab. */
+  kind?: "terminal" | "note";
   /** The terminal tab's panes. */
   term?: Split;
+  /** The text tab's text. */
+  text?: string;
   /** Set when the user renames the tab; otherwise the project names. */
   name?: string;
   /** Project paths, in pane order. */
@@ -23,6 +25,9 @@ export interface Tab {
   widths?: number[];
   /** The code area's share of the height, this tab's own; the terminal has the rest. */
   split?: number;
+  /** More shells beside the tab's terminal, by PTY id: plain shells in the tab folder (the
+   *  tab's own claude session stays in the first one). */
+  sideTerms?: string[];
   /** The file open in each project's pane, by project path: it opens again after a restart. */
   files?: Record<string, string | null>;
 }

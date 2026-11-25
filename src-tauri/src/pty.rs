@@ -102,12 +102,21 @@ pub fn pty_spawn(
     if std::env::var_os("LANG").is_none() {
         cmd.env("LANG", "en_US.UTF-8");
     }
+    // Fusion opened from one of its own shells (`open` passes that shell's environment) has
+    // the tab's ZDOTDIR: the user's own is in FUSION_USER_ZDOTDIR then. Without this, the
+    // tab's .zshenv sources itself until zsh gives up.
+    let inherited = std::env::var_os("FUSION_USER_ZDOTDIR");
+    let user = inherited.clone().or_else(|| std::env::var_os("ZDOTDIR")).map_or_else(home, Into::into);
+    cmd.env_remove("FUSION_TAB_DIR");
+    cmd.env_remove("FUSION_USER_ZDOTDIR");
     if plain {
         // The user's own startup files, as in iTerm.
+        if inherited.is_some() {
+            cmd.env("ZDOTDIR", &user);
+        }
     } else if shell.ends_with("zsh") {
         cmd.env("FUSION_TAB_DIR", &dir);
-        let user = std::env::var_os("ZDOTDIR").map_or_else(home, Into::into);
-        cmd.env("FUSION_USER_ZDOTDIR", user);
+        cmd.env("FUSION_USER_ZDOTDIR", &user);
         cmd.env("ZDOTDIR", meta.join("zdotdir"));
     } else {
         cmd.env("FUSION_TAB_DIR", &dir);

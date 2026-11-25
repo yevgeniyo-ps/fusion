@@ -1,13 +1,18 @@
+import { useEffect, useState } from "react";
+
 // App settings the user sets in the Settings window. One JSON object in localStorage; a new
 // setting is a field here and a default. Each change saves at once.
 
 export interface Settings {
   /** Where a terminal tab's new shell starts (`~/` allowed). */
   termDir: string;
+  /** The animation in the sidebar while claude thinks and when it finishes. */
+  activity: boolean;
 }
 
 export const DEFAULTS: Settings = {
   termDir: "~/code",
+  activity: true,
 };
 
 const KEY = "fusion.settings";
@@ -34,6 +39,20 @@ export function saveSetting<K extends keyof Settings>(key: K, value: Settings[K]
   } catch {
     /* private storage: the setting is just not remembered */
   }
+  window.dispatchEvent(new Event(CHANGED));
+}
+
+const CHANGED = "fusion-settings";
+
+/** One setting, kept current when the Settings window changes it. */
+export function useSetting<K extends keyof Settings>(key: K): Settings[K] {
+  const [value, setValue] = useState(() => loadSettings()[key]);
+  useEffect(() => {
+    const read = () => setValue(loadSettings()[key]);
+    window.addEventListener(CHANGED, read);
+    return () => window.removeEventListener(CHANGED, read);
+  }, [key]);
+  return value;
 }
 
 export const loadTermDir = () => loadSettings().termDir;

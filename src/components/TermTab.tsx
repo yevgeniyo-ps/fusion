@@ -6,8 +6,6 @@ import { Icon } from "./Icons";
 import { TermView, type TermHandle } from "./TermView";
 import { ZoomBadge } from "./ZoomBadge";
 import { SessionName } from "./SessionName";
-import { TokenBadge } from "./TokenBadge";
-import { useClaudeUsage } from "../lib/usage";
 import { Grip } from "./Grip";
 import { blockDoubleClick, useZoomMotion } from "../lib/zoomPane";
 import { loadTermDir } from "../lib/settings";
@@ -118,7 +116,7 @@ export function TermTab({ tab, active, onChange, onEmpty }: Props) {
     // A black frame, a white edge on each pane, as in a project tab. Each pane has an 8px
     // margin, so two panes are 16px apart (a grip line between them); the box reaches 2px
     // past the tab on each side, so a pane is 6px from the window edge, as in a project tab.
-    <div className={active ? "absolute -inset-0.5" : "hidden"}>
+    <div className={active ? "absolute -inset-0.5 bottom-1 left-[calc(var(--gap-left)-8px)] right-1" : "hidden"}>
       <div ref={area} className="relative h-full w-full">
         {laid.panes.map((p) => (
           <div
@@ -138,7 +136,6 @@ export function TermTab({ tab, active, onChange, onEmpty }: Props) {
               onClose={() => close(p.id)}
               zoomed={zoom === p.id}
               hidden={!!zoom && zoom !== p.id}
-              live={active}
               onZoom={() => {
                 setFocus(p.id);
                 toggleZoom(p.id);
@@ -180,7 +177,6 @@ function TermPane({
   onClose,
   zoomed,
   hidden,
-  live,
   onZoom,
 }: {
   id: string;
@@ -194,15 +190,13 @@ function TermPane({
   onClose: () => void;
   zoomed: boolean;
   hidden: boolean;
-  /** Its tab is open: only then is the token count read. */
-  live: boolean;
   onZoom: () => void;
 }) {
   const block = useZoomMotion<HTMLElement>(zoomed, hidden);
-  const { usage, running: claudeRuns } = useClaudeUsage(id, true, live && !hidden);
-  const fit = "calc(var(--window-radius) - var(--frame-gap))";
+  const fit = "var(--corner-radius)";
   return (
     <section
+      tabIndex={-1}
       ref={block}
       onPointerDown={onFocus}
       onDoubleClick={blockDoubleClick(onZoom)}
@@ -217,7 +211,6 @@ function TermPane({
           <Icon name="close" className="h-3 w-3" />
         </button>
         <SessionName id={id} fallback={title || "shell"} className={["text-[12px]", focused ? "text-[#e7e7e7]" : "text-muted"].join(" ")} />
-        <TokenBadge usage={usage} running={claudeRuns} />
         {zoomed && <ZoomBadge />}
         <span className="ml-auto flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
           <button onClick={() => onSplit("row")} title="Split right  ⌘D" className="rounded p-1 text-muted hover:bg-hover hover:text-fg">

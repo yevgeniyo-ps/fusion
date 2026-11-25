@@ -8,6 +8,7 @@ import type { PtyEvent } from "../types";
 import { MONO, XTERM_THEME } from "../lib/theme";
 import { fontKey, loadFont, saveFont } from "../lib/fontSize";
 import { takeRestore } from "../lib/restore";
+import { forget, reportTitle } from "../lib/claudeActivity";
 
 /** What a terminal's parent can do with it. */
 export interface TermHandle {
@@ -95,7 +96,10 @@ export function TermView({ ptyId, plain, ready, cwd, focused, onHandle, onTitle,
       api.ptyWrite(ptyId, d).catch(() => {});
     });
     const resize = t.onResize(({ cols, rows }) => api.ptyResize(ptyId, cols, rows).catch(() => {}));
-    const title = t.onTitleChange((s) => cb.current.onTitle?.(s));
+    const title = t.onTitleChange((s) => {
+      reportTitle(ptyId, s);
+      cb.current.onTitle?.(s);
+    });
     // xterm keeps its textarea for keys: its focus is the pane's.
     const textarea = t.textarea;
     const focusIn = () => cb.current.onFocus?.();
@@ -130,6 +134,7 @@ export function TermView({ ptyId, plain, ready, cwd, focused, onHandle, onTitle,
       box.removeEventListener("keydown", zoom, true);
       textarea?.removeEventListener("focus", focusIn);
       title.dispose();
+      forget(ptyId);
       input.dispose();
       resize.dispose();
       t.dispose();

@@ -1,5 +1,4 @@
 import { Channel, invoke } from "@tauri-apps/api/core";
-import type { Usage } from "./lib/usage";
 import type { Found, Branches, DirEntry, GitStatus, Layout, Project, PtyEvent } from "./types";
 
 /** A repo of a GitHub org or user (src-tauri/src/github.rs). */
@@ -22,6 +21,16 @@ export type ImportEvent =
   | { kind: "failed"; name: string; error: string };
 
 // One function per Rust command (src-tauri/src). Tauri maps camelCase args to snake_case.
+/** One plan limit: percent used, and when it resets. */
+export interface PlanLimit {
+  utilization: number;
+  resets_at: string | null;
+}
+export interface PlanUsage {
+  five_hour: PlanLimit | null;
+  seven_day: PlanLimit | null;
+}
+
 export const api = {
   projectsLoad: () => invoke<Project[]>("projects_load"),
   projectAdd: (path: string) => invoke<Project>("project_add", { path }),
@@ -63,9 +72,9 @@ export const api = {
     invoke<string>("tab_sync", { id, name, projects }),
   tabClose: (id: string) => invoke<void>("tab_close", { id }),
 
-  /** The Claude tokens of a terminal's session; null before its first reply. */
-  claudeUsage: (id: string, plain: boolean, cwd: string | null) => invoke<Usage | null>("claude_usage", { id, plain, cwd }),
   /** `plain`: a shell in `cwd`, else the home folder (a terminal tab's pane), not in the tab folder. */
+  /** The Claude plan's limits (src-tauri/src/plan.rs); null when they cannot be read. */
+  planUsage: () => invoke<PlanUsage | null>("plan_usage"),
   ptySpawn: (id: string, cols: number, rows: number, plain: boolean, cwd: string | null, run: string | null, onEvent: Channel<PtyEvent>) =>
     invoke<void>("pty_spawn", { id, cols, rows, plain, cwd, run, onEvent }),
   /** What each shell runs now: its folder and its foreground command. */

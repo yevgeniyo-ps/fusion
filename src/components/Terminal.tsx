@@ -4,8 +4,6 @@ import type { Project } from "../types";
 import { useIncoming, type Incoming } from "../lib/incoming";
 import { Icon } from "./Icons";
 import { ZoomBadge } from "./ZoomBadge";
-import { TokenBadge } from "./TokenBadge";
-import { useClaudeUsage } from "../lib/usage";
 import { blockDoubleClick, useZoomMotion } from "../lib/zoomPane";
 import { TermView, type TermHandle } from "./TermView";
 
@@ -20,19 +18,72 @@ interface Props {
   /** Hidden while a code pane is zoomed. */
   hidden: boolean;
   onZoom: () => void;
+  /** More shells beside it (plain, in the tab folder), by PTY id. */
+  sideTerms: string[];
+  onSideTerms: (ids: string[]) => void;
+}
+
+/** The terminals' shares of the width, saved per tab (they sum to 1). */
+function loadShares(tabId: string, n: number): number[] {
+  try {
+    const s = JSON.parse(localStorage.getItem(`fusion.termWidths.${tabId}`) || "null");
+    if (Array.isArray(s) && s.length === n) return s;
+  } catch {
+    /* none saved */
+  }
+  return Array(n).fill(1 / n);
 }
 
 /** A path for the shell, in single quotes. */
 const sq = (s: string) => `'${s.replace(/'/g, `'\\''`)}'`;
 
 /** A project tab's shell. `claude` in it is the tab's wrapper (src-tauri/resources/claude.sh). */
-export function Terminal({ tabId, dir, active, projects, zoomed, hidden, onZoom }: Props) {
+export function Terminal({ tabId, dir, active, projects, zoomed, hidden, onZoom, sideTerms, onSideTerms }: Props) {
   const term = useRef<TermHandle | null>(null);
   const block = useZoomMotion<HTMLElement>(zoomed, hidden);
-  const { usage, running: claudeRuns } = useClaudeUsage(tabId, false, active && dir !== null);
   const [note, setNote] = useState<string | null>(null);
   const [menu, setMenu] = useState(false);
   const incoming = useIncoming(projects.map((p) => p.path), active);
+  // The first terminal and the ones beside it: their widths, and the drag between two.
+  const row = useRef<HTMLDivElement>(null);
+  const n = sideTerms.length + 1;
+  const [shares, setShares] = useState(() => loadShares(tabId, n));
+  const widths = shares.length === n ? shares : Array(n).fill(1 / n);
+  const saveShares = (next: number[]) => {
+    setShares(next);
+    try {
+      localStorage.setItem(`fusion.termWidths.${tabId}`, JSON.stringify(next));
+    } catch {
+      /* private storage: the widths are just not remembered */
+    }
+  };
+  const dragWidth = (i: number) => (e: React.PointerEvent) => {
+    const el = row.current;
+    if (!el) return;
+    e.preventDefault();
+    const r = el.getBoundingClientRect();
+    const start = widths.slice(0, i).reduce((a, b) => a + b, 0);
+    const pair = widths[i] + widths[i + 1];
+    const min = Math.min(0.1, pair / 2);
+    const move = (ev: PointerEvent) => {
+      const a = Math.min(pair - min, Math.max(min, (ev.clientX - r.left) / r.width - start));
+      const next = [...widths];
+      next[i] = a;
+      next[i + 1] = pair - a;
+      saveShares(next);
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
+  // A terminal added or closed: equal widths again.
+  const setSide = (ids: string[]) => {
+    saveShares(Array(ids.length + 1).fill(1 / (ids.length + 1)));
+    onSideTerms(ids);
+  };
 
   /** Types a command line into the shell and runs it, the way you would. Only when the shell
    *  itself is in front: typed into claude (or vim, or watch), it would go to that program. */
@@ -47,8 +98,6 @@ export function Terminal({ tabId, dir, active, projects, zoomed, hidden, onZoom 
     api.ptyWrite(tabId, line + "\r").catch(() => {});
     term.current?.focus();
   };
-
-  const runClaude = () => run("claude");
 
   // git pull in each project, in the terminal: git's own output, with the shell's ssh agent
   // and git config. A heading names each project.
@@ -76,7 +125,7 @@ export function Terminal({ tabId, dir, active, projects, zoomed, hidden, onZoom 
     if (results.every((r) => r.ok)) pullTimer.current = window.setTimeout(() => setPulled(null), 6000);
   };
 
-  // Select an area of the screen: the image goes to the clipboard, and its path is pasted
+  // ⌘⇧2: select an area of the screen: the image goes to the clipboard, and its path is pasted
   // here. xterm's paste() uses bracketed paste when the program asks for it, so claude
   // takes the path as a pasted image.
   const [snapping, setSnapping] = useState(false);
@@ -111,10 +160,9 @@ export function Terminal({ tabId, dir, active, projects, zoomed, hidden, onZoom 
   }, [active]);
 
   return (
-    <section ref={block} onDoubleClick={blockDoubleClick(onZoom)} className="flex h-full min-h-0 flex-col overflow-hidden rounded-md tab-edge rounded-b-[calc(var(--window-radius)-var(--frame-gap))] bg-panel">
+    <section ref={block} tabIndex={-1} onDoubleClick={blockDoubleClick(onZoom)} className="flex h-full min-h-0 flex-col overflow-hidden rounded-md tab-edge rounded-b-[var(--corner-radius)] bg-panel">
       <header className="flex h-9 shrink-0 items-center gap-2.5 border-b border-[#2b2b2b] px-3">
         <Icon name="terminal" className="h-3.5 w-3.5 text-muted" />
-        <TokenBadge usage={usage} running={claudeRuns} />
         {zoomed && <ZoomBadge />}
         {note && <span className="truncate text-[12px] text-[#e2c08d]">{note}</span>}
         <span className="relative ml-auto flex items-center">
@@ -122,22 +170,39 @@ export function Terminal({ tabId, dir, active, projects, zoomed, hidden, onZoom 
           {pulled && <PullResults rows={pulled} onClose={() => setPulled(null)} />}
         </span>
         <button
-          onClick={snap}
-          disabled={snapping}
-          title="Screenshot an area  ⌘⇧2 · to the clipboard, and its path into the terminal"
-          className="flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] text-muted ring-1 ring-inset ring-white/[0.12] hover:bg-hover hover:text-fg disabled:opacity-40"
+          onClick={() => setSide([...sideTerms, crypto.randomUUID()])}
+          title="One more terminal beside it, in the tab folder (claude there is a session of its own)"
+          className="rounded p-1 text-muted hover:bg-hover hover:text-fg"
         >
-          <Icon name="camera" className="h-3.5 w-3.5" /> snap
-        </button>
-        <button
-          onClick={runClaude}
-          title="Type claude in the terminal"
-          className="flex items-center gap-1.5 rounded-full bg-white/[0.08] px-3 py-1 text-[12px] font-medium text-fg ring-1 ring-inset ring-white/[0.16] hover:bg-white/[0.12]"
-        >
-          <Icon name="spark" className="h-3 w-3" /> claude
+          <Icon name="splitRight" className="h-3.5 w-3.5" />
         </button>
       </header>
-      <TermView ptyId={tabId} plain={false} ready={dir !== null} focused={active} onHandle={(h) => (term.current = h)} />
+      <div ref={row} className="flex min-h-0 flex-1">
+        <div style={{ flexGrow: widths[0], flexBasis: 0 }} className="flex min-h-0 min-w-0 flex-col">
+          <TermView ptyId={tabId} plain={false} ready={dir !== null} focused={active} onHandle={(h) => (term.current = h)} />
+        </div>
+        {sideTerms.map((id, i) => (
+          <div key={id} className="contents">
+          {/* The line between two terminals: drag it to resize them. */}
+          <div onPointerDown={dragWidth(i)} title="Drag to resize" className="group/grip relative z-10 -mx-[3px] flex w-[7px] shrink-0 cursor-col-resize justify-center">
+            <div className="w-px bg-[#2b2b2b] transition-colors group-hover/grip:bg-white/40" />
+          </div>
+          <div style={{ flexGrow: widths[i + 1], flexBasis: 0 }} className="group relative flex min-h-0 min-w-0 flex-col">
+            <button
+              onClick={() => {
+                api.ptyKill(id).catch(() => {});
+                setSide(sideTerms.filter((x) => x !== id));
+              }}
+              title="Close this terminal"
+              className="absolute right-1.5 top-1 z-10 rounded p-0.5 text-muted opacity-0 transition-opacity hover:bg-hover hover:text-fg group-hover:opacity-100"
+            >
+              <Icon name="close" className="h-3 w-3" />
+            </button>
+            <TermView ptyId={id} plain ready={dir !== null} cwd={dir ?? undefined} focused={false} />
+          </div>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }

@@ -89,6 +89,7 @@ export function Pane({
   return (
     <section
       ref={block}
+      tabIndex={-1}
       onDoubleClick={blockDoubleClick(onZoom)}
       onKeyDownCapture={(e) => {
         if (e.metaKey && e.shiftKey && !e.altKey && !e.ctrlKey && e.code === "KeyF") {
@@ -109,6 +110,11 @@ export function Pane({
             {rel}
             {dirty && <span className="text-fg"> ●</span>}
           </span>
+        )}
+        {rel && (
+          <button onClick={() => setFile(null)} title="Close the file (saves it first)" className="-ml-1.5 shrink-0 rounded p-0.5 text-faint hover:bg-hover hover:text-fg">
+            <Icon name="close" className="h-3 w-3" />
+          </button>
         )}
         {zoomed && <ZoomBadge />}
         {linkNote && <span className="shrink-0 truncate text-[12px] text-[#e2c08d]">{linkNote}</span>}

@@ -282,7 +282,13 @@ interface Parsed {
 /** An Atlantis comment, taken apart: what ran, on which project, the plan's numbers, the
  *  output, and the commands it suggests. The rest is its boilerplate. */
 export function parse(body: string): Parsed {
-  const clean = body.replace(/<\/?details>|<summary>.*?<\/summary>|<!--[\s\S]*?-->|<br\s*\/?>/g, "");
+  // Shown as text, never as HTML; the markup is dropped until none is left (a removal can
+  // join the halves of another tag).
+  let clean = body;
+  for (let prev = ""; prev !== clean; ) {
+    prev = clean;
+    clean = clean.replace(/<\/?details>|<summary>.*?<\/summary>|<!--[\s\S]*?-->|<br\s*\/?>/g, "");
+  }
   const parts = clean.split(/```[a-z]*\n?/);
   const code = parts.filter((_, i) => i % 2 === 1).map((p) => p.replace(/\n$/, ""));
   const prose = parts.filter((_, i) => i % 2 === 0).join("\n");

@@ -2,18 +2,21 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { DndContext, DragOverlay, PointerSensor, useDroppable, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from "@dnd-kit/core";
 import { homeDir } from "@tauri-apps/api/path";
 import { TabPalette, noteOpen } from "./components/TabPalette";
-import { states as ptyStatesShared } from "./lib/usage";
+import { states as ptyStatesShared } from "./lib/ptyStates";
 import { open } from "@tauri-apps/plugin-dialog";
 import { api } from "./api";
 import type { Layout, Project, ProjectGroup, Tab } from "./types";
 import { baseName, tabName } from "./lib/names";
 import { ProjectCard, Sidebar } from "./components/Sidebar";
+import { ActivityBadge, useClaudeTabs } from "./components/ClaudeActivity";
+import { useSetting } from "./lib/settings";
 import { TabBar } from "./components/TabBar";
 import { Workspace } from "./components/Workspace";
 import { CloneDialog } from "./components/CloneDialog";
 import { SettingsDialog } from "./components/SettingsDialog";
 import { ImportDialog } from "./components/ImportDialog";
 import { TermTab } from "./components/TermTab";
+import { NoteTab } from "./components/NoteTab";
 import { SessionNames } from "./components/SessionName";
 import { leaf, leaves } from "./lib/splits";
 import { setSaved } from "./lib/restore";
@@ -86,7 +89,7 @@ export function App() {
       const live = await ptyStatesShared();
       setLayout((l) => {
         if (!l) return l;
-        const ids = new Set(l.tabs.flatMap((t) => (t.term ? leaves(t.term) : [t.id, ...t.projects.map((p) => projectTermId(t.id, p))])));
+        const ids = new Set(l.tabs.flatMap((t) => (t.term ? leaves(t.term) : t.kind === "note" ? [] : [t.id, ...(t.sideTerms ?? []), ...t.projects.map((p) => projectTermId(t.id, p))])));
         const shells: NonNullable<Layout["shells"]> = {};
         for (const id of ids) {
           const s = live[id] ?? l.shells?.[id];
@@ -127,11 +130,18 @@ export function App() {
       const id = crypto.randomUUID();
       return { ...l, active: id, tabs: [...l.tabs, { id, kind: "terminal", term: leaf(), projects: [] }] };
     });
-  // A terminal tab takes no projects: a project dropped on it is ignored.
+  /** A tab with one blank text page. */
+  const newNoteTab = () =>
+    update((l) => {
+      const id = crypto.randomUUID();
+      return { ...l, active: id, tabs: [...l.tabs, { id, kind: "note", text: "", projects: [] }] };
+    });
+  const setText = (id: string, text: string) => update((l) => ({ ...l, tabs: l.tabs.map((t) => (t.id === id ? { ...t, text } : t)) }));
+  // A terminal or text tab takes no projects: a project dropped on it is ignored.
   const addToTab = (id: string, path: string) =>
     update((l) => {
       const tab = l.tabs.find((t) => t.id === id);
-      if (!tab || tab.kind === "terminal") return l;
+      if (!tab || tab.kind) return l;
       return {
         ...l,
         active: id,
@@ -147,6 +157,7 @@ export function App() {
     const tab = layout?.tabs.find((t) => t.id === id);
     if (tab?.term) leaves(tab.term).forEach((p) => api.ptyKill(p).catch(() => {}));
     tab?.projects.forEach((p) => api.ptyKill(projectTermId(tab.id, p)).catch(() => {}));
+    tab?.sideTerms?.forEach((p) => api.ptyKill(p).catch(() => {}));
     api.tabClose(id).catch(console.error);
     update((l) => {
       const i = l.tabs.findIndex((t) => t.id === id);
@@ -178,7 +189,7 @@ export function App() {
 
   const addFolderRef = useRef(addFolder);
   addFolderRef.current = addFolder;
-  // ⌘⇧C: clone a repo. ⌘O: add a folder. ⌘T: new tab (⌘⇧T: terminal tab). ⌘1…⌘8: go to a
+  // ⌘⇧C: clone a repo. ⌘O: add a folder. ⌘T: new tab (⌘⇧T: terminal tab). ⌘N: text tab. ⌘1…⌘8: go to a
   // tab, ⌘9: the last one. ⌘⇧A: the tab list (TabBar). ⌘K or ⌘⌥P: go to a tab (TabPalette). [: show or hide the projects.
   // (⌘+ / ⌘- / ⌘0 change the font of the focused terminal or editor: lib/fontSize.)
   const layoutRef = useRef(layout);
@@ -201,6 +212,9 @@ export function App() {
         e.preventDefault();
         if (e.shiftKey) newTermTab();
         else newTab();
+      } else if (e.metaKey && !e.shiftKey && !e.altKey && !e.ctrlKey && e.code === "KeyN") {
+        e.preventDefault();
+        newNoteTab();
       } else if (e.metaKey && /^[1-9]$/.test(e.key)) {
         const tabs = layoutRef.current?.tabs ?? [];
         const t = e.key === "9" ? tabs[tabs.length - 1] : tabs[Number(e.key) - 1];
@@ -277,6 +291,16 @@ export function App() {
       return { ...l, names };
     });
 
+  // Each terminal's tab, for the Claude activity in the tab bar.
+  const tabOf = (ptyId: string) => {
+    const t = layout?.tabs.find((x) =>
+      x.term ? leaves(x.term).includes(ptyId) : x.id === ptyId || !!x.sideTerms?.includes(ptyId) || x.projects.some((p) => projectTermId(x.id, p) === ptyId),
+    );
+    return t ? { id: t.id, name: tabName(t, byPath) } : null;
+  };
+  const claude = useClaudeTabs(tabOf, layout?.active ?? null);
+  const activityOn = useSetting("activity");
+
   if (!layout) return <div className="h-full" data-tauri-drag-region />;
 
   const fallback = (path: string): Project => ({ name: baseName(path), path });
@@ -284,7 +308,9 @@ export function App() {
   return (
     <SessionNames.Provider value={{ names: layout.names ?? {}, rename: renameSession }}>
     <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setDragging(null)}>
-      <div className="flex h-full">
+      {/* The gap left of the blocks: less next to the dark sidebar (it looks wider there), the
+          same as the right gap (12px) when the sidebar is folded. */}
+      <div className="flex h-full" style={{ "--gap-left": sidebar ? "8px" : "12px" } as React.CSSProperties}>
         {sidebar && (
           <Sidebar
             projects={projects}
@@ -311,7 +337,11 @@ export function App() {
             onClose={closeTab}
             onNew={() => newTab()}
             onNewTerm={newTermTab}
+            onNewNote={newNoteTab}
             onRename={renameTab}
+            busy={activityOn ? new Set(claude.working.map((t) => t.id)) : undefined}
+            finished={activityOn ? new Set(claude.done.map((t) => t.id)) : undefined}
+            activity={activityOn ? <ActivityBadge tabs={claude} onPick={pickTab} /> : null}
           />
           <div className="relative min-h-0 flex-1">
             {layout.tabs.map((t) =>
@@ -323,6 +353,8 @@ export function App() {
                   onChange={(term) => setTerm(t.id, term)}
                   onEmpty={() => closeTab(t.id)}
                 />
+              ) : t.kind === "note" ? (
+                <NoteTab key={t.id} tab={t} active={t.id === layout.active} onText={(text) => setText(t.id, text)} />
               ) : (
               <Workspace
                 key={t.id}
@@ -334,6 +366,7 @@ export function App() {
                 onSplit={(split) => update((l) => ({ ...l, tabs: l.tabs.map((x) => (x.id === t.id ? { ...x, split } : x)) }))}
                 onRemove={(path) => removeFromTab(t.id, path)}
                 onWidths={(widths) => update((l) => ({ ...l, tabs: l.tabs.map((x) => (x.id === t.id ? { ...x, widths } : x)) }))}
+                onSideTerms={(sideTerms) => update((l) => ({ ...l, tabs: l.tabs.map((x) => (x.id === t.id ? { ...x, sideTerms } : x)) }))}
                 onFile={(path, file) => update((l) => ({ ...l, tabs: l.tabs.map((x) => (x.id === t.id ? { ...x, files: { ...x.files, [path]: file } } : x)) }))}
               />
               ),
@@ -360,17 +393,6 @@ export function App() {
         />
       )}
       {importing && <ImportDialog open onClose={() => setImporting(false)} onProject={(p) => addProject(p, false)} />}
-      {/* The sidebar has the gear; folded, it stays in the corner. */}
-      {!sidebar && (
-        <button
-          onClick={() => setSettings(true)}
-          title="Settings"
-          aria-label="Settings"
-          className="fixed bottom-2 left-2.5 z-40 flex h-[22px] w-[22px] items-center justify-center rounded-[4px] text-text hover:bg-[#2a2d2e]"
-        >
-          <Icon name="settings" className="h-4 w-4" />
-        </button>
-      )}
       {settings && <SettingsDialog onClose={() => setSettings(false)} />}
       <CloneDialog open={cloning} canAddToTab={!!layout.active} onClose={() => setCloning(false)} onDone={addProject} />
     </DndContext>

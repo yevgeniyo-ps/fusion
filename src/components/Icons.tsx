@@ -1,10 +1,12 @@
 // One set of thin line icons (16 px, 1.5 stroke).
 
 export type IconName =
-  | "chevron" | "chevrons" | "close" | "plus" | "folder" | "branch" | "clone" | "tree" | "terminal" | "spark" | "camera" | "splitRight" | "splitDown" | "github" | "folderPlus" | "pull" | "check" | "maximize" | "pencil" | "select" | "more" | "sort" | "search" | "settings";
+  | "chevron" | "chevrons" | "close" | "plus" | "folder" | "branch" | "clone" | "tree" | "terminal" | "spark" | "camera" | "splitRight" | "splitDown" | "github" | "folderPlus" | "pull" | "check" | "maximize" | "pencil" | "select" | "more" | "sort" | "search" | "settings" | "note" | "code" | "codeBlock";
 
 const ICONS: Record<IconName, React.ReactNode> = {
   chevron: <path d="m6 4 4 4-4 4" />,
+  code: <path d="M5.5 4.5 2 8l3.5 3.5M10.5 4.5 14 8l-3.5 3.5M9 3.5l-2 9" />,
+  codeBlock: <><path d="M10 2.5h2a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H4A1.5 1.5 0 0 1 2.5 12V4A1.5 1.5 0 0 1 4 2.5h1" /><path d="M6 6.5 4.75 8 6 9.5M10 6.5 11.25 8 10 9.5M8.75 5.5l-1.5 5" /></>,
   chevrons: <path d="M3.5 4l4 4-4 4M8.5 4l4 4-4 4" />,
   close: <path d="m4.5 4.5 7 7M11.5 4.5l-7 7" />,
   plus: <path d="M8 3.25v9.5M3.25 8h9.5" />,
@@ -26,6 +28,7 @@ const ICONS: Record<IconName, React.ReactNode> = {
   more: <><circle cx="3.5" cy="8" r="1" fill="currentColor" stroke="none" /><circle cx="8" cy="8" r="1" fill="currentColor" stroke="none" /><circle cx="12.5" cy="8" r="1" fill="currentColor" stroke="none" /></>,
   sort: <path d="M4.5 3v10M2.5 11 4.5 13l2-2M9 4h4.5M9 8h3.25M9 12h2" />,
   settings: <><circle cx="8" cy="8" r="2" /><path d="M6.9 1.75h2.2l.35 1.75 1.3.75 1.7-.55 1.1 1.9-1.35 1.2v1.5l1.35 1.2-1.1 1.9-1.7-.55-1.3.75-.35 1.75H6.9l-.35-1.75-1.3-.75-1.7.55-1.1-1.9 1.35-1.2V7.2L2.45 6l1.1-1.9 1.7.55 1.3-.75z" /></>,
+  note: <><path d="M4 2.25h5l3 3v8.5H4z" /><path d="M9 2.25v3h3M6.25 8.25h3.5M6.25 10.75h3.5" /></>,
   search: <><circle cx="7" cy="7" r="4.25" /><path d="m10.25 10.25 3 3" /></>,
   spark: <path d="M8 2.25c.45 2.9 1.85 4.3 4.75 4.75-2.9.45-4.3 1.85-4.75 4.75C7.55 8.85 6.15 7.45 3.25 7 6.15 6.55 7.55 5.15 8 2.25Z" />,
 };

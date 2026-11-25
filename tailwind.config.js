@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-// The design tokens: black surfaces, hairline rings,
+// The design tokens: black blocks on a grey window, hairline rings,
 // and the three status colours as the only colour. Fusion uses them for git state.
 // Fonts, text greys and the syntax and terminal colours follow VS Code instead, for contrast.
 export default {
@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg: "#000000",
+        bg: "#1f2024",
         panel: "#0a0a0c",
         card: "#101113",
         border: "#383c44",

@@ -6,11 +6,12 @@ mod git;
 mod github;
 mod projects;
 mod session;
+mod plan;
 mod pty;
 mod search;
 mod shot;
 mod tab;
-mod usage;
+mod tray;
 mod watch;
 
 /// An app opened from the Dock or the Finder gets launchd's PATH (/usr/bin:/bin:…), not the
@@ -50,7 +51,7 @@ fn login_path() {
 
 /// A Fusion started from inside a Claude Code session (its terminal ran `open Fusion.app`)
 /// inherits that session's variables: a claude in Fusion's terminals would then run as its
-/// child (no transcript of its own, so no token count), and the session's messaging token
+/// child (no transcript of its own), and the session's messaging token
 /// would be visible there. They go, once, before anything starts; the user's own
 /// CLAUDE_CONFIG_DIR stays.
 fn drop_parent_claude_env() {
@@ -67,11 +68,12 @@ fn main() {
     drop_parent_claude_env();
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .setup(|app| Ok(tray::install(app.handle())?))
         .manage(projects::Projects::default())
         .manage(pty::Ptys::default())
         .manage(watch::Watches::default())
-        .manage(usage::UsageCache::default())
         .invoke_handler(tauri::generate_handler![
+            plan::plan_usage,
             projects::projects_load,
             projects::project_add,
             projects::project_remove,
@@ -101,7 +103,6 @@ fn main() {
             pty::pty_states,
             shot::screenshot,
             search::search,
-            usage::claude_usage,
         ])
         .run(tauri::generate_context!())
         .expect("Fusion failed to start");

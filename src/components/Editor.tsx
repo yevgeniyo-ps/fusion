@@ -218,7 +218,11 @@ export function Editor({ path, diff, head, onDirty, onLines, fontId, jump, onGit
   }, []);
 
   useEffect(() => {
-    if (!path) return;
+    // Closed: unsaved edits are written first.
+    if (!path) {
+      save().then(() => (open.current = null));
+      return;
+    }
     let gone = false;
     (async () => {
       await save();

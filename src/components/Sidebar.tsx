@@ -4,6 +4,7 @@ import type { Project, ProjectGroup } from "../types";
 import { tildify } from "../lib/names";
 import { GROUP_COLORS, moveTo, nextGroupColor, sortGroup, sortGroups } from "../lib/groups";
 import { Icon, Wordmark } from "./Icons";
+import { PlanUsage } from "./PlanUsage";
 
 interface Props {
   projects: Project[];
@@ -15,6 +16,7 @@ interface Props {
   onAddFolder: () => void;
   onImport: () => void;
   onSettings: () => void;
+  /** The tab a terminal is in, for the Claude activity card; the open tab; go to a tab. */
   /** Removes projects from Fusion (and from the tabs that have them); their folders stay. */
   onRemove: (ps: Project[]) => void;
   /** A new tab with these projects. */
@@ -95,9 +97,19 @@ export function Sidebar({ projects, home, groups, onGroups, onFold, onClone, onA
     );
 
   const open = menu ? groups.find((g) => g.id === menu.id) : undefined;
+  // Every group folded: the header's button expands them all; otherwise it folds them all.
+  const allFolded = groups.length > 0 && groups.every((g) => g.collapsed);
 
   return (
-    <aside className="flex w-64 shrink-0 flex-col border-r border-white/[0.12] bg-panel/80">
+    <aside
+      // A double-click on empty space folds the sidebar; not on a control, a project or a group,
+      // nor on the top strip (there it zooms the window, as macOS does).
+      onDoubleClick={(e) => {
+        if ((e.target as HTMLElement).closest("button, input, textarea, a, label, [role], [data-tauri-drag-region]")) return;
+        onFold();
+      }}
+      className="flex w-64 shrink-0 flex-col border-r border-white/[0.12] bg-panel/80"
+    >
       {/* The window's traffic lights sit in this strip; it also drags the window. */}
       <div data-tauri-drag-region className="flex h-[52px] shrink-0 items-center justify-end px-3">
         <button onClick={onFold} title="Hide projects  [" className="rounded-md p-1.5 text-white/40 hover:bg-hover hover:text-fg">
@@ -141,6 +153,19 @@ export function Sidebar({ projects, home, groups, onGroups, onFold, onClone, onA
           <input type="checkbox" checked={allShown} onChange={pickAll} className="accent-white" />
           All{t ? " shown" : ""}
         </label>
+      )}
+      {/* On its own line, in words: fold or open every group at once. */}
+      {groups.length > 1 && !t && (
+        <div className="flex h-[22px] shrink-0 items-center pl-4 pr-3">
+          <span className="text-[11px] text-muted">Groups</span>
+          <button
+            onClick={() => onGroups(groups.map((g) => ({ ...g, collapsed: !allFolded })))}
+            className="ml-auto flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-muted hover:bg-hover hover:text-fg"
+          >
+            <Icon name="chevron" className={["h-3 w-3 transition-transform", allFolded ? "" : "rotate-90"].join(" ")} />
+            {allFolded ? "Expand all" : "Collapse all"}
+          </button>
+        </div>
       )}
       <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2.5 pb-2">
         {groups.map((g) => {
@@ -226,8 +251,9 @@ export function Sidebar({ projects, home, groups, onGroups, onFold, onClone, onA
           </div>
         </div>
       )}
-      <div className="flex shrink-0 items-center border-t border-white/[0.12] px-2.5 py-1.5">
+      <div className="flex shrink-0 flex-col gap-1.5 border-t border-white/[0.12] px-2.5 pb-2.5 pt-1.5">
         <HeadButton icon="settings" title="Settings" onClick={onSettings} />
+        <PlanUsage />
       </div>
       {menu && open && (
         <GroupMenu

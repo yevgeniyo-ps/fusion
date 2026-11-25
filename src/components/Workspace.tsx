@@ -17,11 +17,12 @@ interface Props {
   onRemove: (path: string) => void;
   onWidths: (widths: number[]) => void;
   onFile: (project: string, file: string | null) => void;
+  onSideTerms: (ids: string[]) => void;
 }
 
 /** One tab: a pane per project side by side, the terminal under them. Hidden tabs stay
  *  mounted, so their shells and editors keep running. */
-export function Workspace({ tab, name, projects, active, split, onSplit, onRemove, onWidths, onFile }: Props) {
+export function Workspace({ tab, name, projects, active, split, onSplit, onRemove, onWidths, onFile, onSideTerms }: Props) {
   const { isOver, setNodeRef } = useDroppable({ id: `ws:${tab.id}` });
   const [dir, setDir] = useState<string | null>(null);
   const box = useRef<HTMLDivElement>(null);
@@ -88,10 +89,10 @@ export function Workspace({ tab, name, projects, active, split, onSplit, onRemov
   };
 
   return (
-    // A black frame; each block has a white edge (.tab-edge).
+    // A grey frame; each block has an edge (.tab-edge): black, white on the active one.
     <div
       ref={box}
-      className={active ? "absolute inset-0 flex flex-col p-1.5" : "hidden"}
+      className={active ? "absolute inset-0 flex flex-col pb-3 pl-[var(--gap-left)] pr-3 pt-1.5" : "hidden"}
     >
       <div
         ref={(el) => {
@@ -149,7 +150,7 @@ export function Workspace({ tab, name, projects, active, split, onSplit, onRemov
         </div>
       )}
       <div className={["min-h-0 flex-1", codeZoomed ? "hidden" : ""].join(" ")}>
-        <Terminal tabId={tab.id} dir={dir} active={active} projects={projects} zoomed={zoom === "terminal"} hidden={codeZoomed} onZoom={() => toggle("terminal")} />
+        <Terminal tabId={tab.id} dir={dir} active={active} projects={projects} sideTerms={tab.sideTerms ?? []} onSideTerms={onSideTerms} zoomed={zoom === "terminal"} hidden={codeZoomed} onZoom={() => toggle("terminal")} />
       </div>
     </div>
   );

@@ -22,6 +22,21 @@ const SECTIONS: { id: string; title: string; icon: IconName; render: (s: Setting
       </Row>
     ),
   },
+  {
+    id: "interface",
+    title: "Interface",
+    icon: "spark",
+    render: (s, set) => (
+      <Row
+        title="Claude activity animation"
+        description="In the sidebar: an animation while claude thinks in any tab, and another when it finishes, with the tab to go to."
+        changed={s.activity !== DEFAULTS.activity}
+        onReset={() => set("activity", DEFAULTS.activity)}
+      >
+        <Switch on={s.activity} onChange={(v) => set("activity", v)} label="Show the Claude activity animation" />
+      </Row>
+    ),
+  },
 ];
 
 /** The app's settings, in sections as in VS Code. A change saves at once. */
@@ -113,5 +128,19 @@ function FolderInput({ value, placeholder, onChange }: { value: string; placehol
         Browse…
       </button>
     </div>
+  );
+}
+
+function Switch({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label: string }) {
+  return (
+    <button
+      role="switch"
+      aria-checked={on}
+      aria-label={label}
+      onClick={() => onChange(!on)}
+      className={["relative h-[18px] w-8 rounded-full transition-colors", on ? "bg-[#0078d4]" : "bg-[#3c3c3c]"].join(" ")}
+    >
+      <span className={["absolute left-0 top-[2px] h-[14px] w-[14px] rounded-full bg-white shadow transition-transform", on ? "translate-x-[16px]" : "translate-x-[2px]"].join(" ")} />
+    </button>
   );
 }

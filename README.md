@@ -4,7 +4,16 @@ A lightweight macOS IDE where a **tab is a mix of repos**. Drag two or three che
 
 Built with Tauri 2 (Rust + the system WebKit), React, CodeMirror 6 and xterm.js. The app is about 6 MB.
 
-![A Fusion tab that mixes two repos: storefront and payments-api side by side, each with its file tree and an inline diff against HEAD, and one terminal under them](docs/images/fusion-tab.png)
+![A project tab: two repos side by side, Claude working in the terminal under them, a dev server beside it](docs/media/project.png)
+
+<table>
+<tr>
+<td><img src="docs/media/terminal.png" alt="A terminal tab split like iTerm"></td>
+<td><img src="docs/media/note.png" alt="A text tab with Markdown and a code block"></td>
+</tr>
+</table>
+
+*Screenshots use a made-up demo workspace.*
 
 ## Install
 
@@ -13,8 +22,8 @@ Fusion runs on Apple Silicon Macs with macOS 13 or later.
 ### From the release (no build tools)
 
 ```sh
-gh release download v0.2.4 -R yevgeniyo-ps/fusion -p '*.dmg'
-open Fusion_0.2.4_aarch64.dmg
+gh release download v0.2.5 -R yevgeniyo-ps/fusion -p '*.dmg'
+open Fusion_0.2.5_aarch64.dmg
 ```
 
 Drag **Fusion** to **Applications**, then open it from Launchpad or Spotlight.
@@ -63,21 +72,27 @@ Dev and release builds share the same data folder, so quit one before starting t
 
 **Tabs** — drag projects onto a tab, onto the open tab's panes, or onto **+** for a new mix. Drag a tab to reorder it; double-click to rename it. Many tabs scroll in the strip; **▾** (⌘⇧A) lists them all. **⌘K** (or ⌘⌥P) jumps to any tab by name or project, and Enter on an empty search goes back to the previous tab. Each tab keeps its own terminal height.
 
-**Terminal tabs** — ⌘⇧T opens a tab of plain shells. Split like iTerm: ⌘D right, ⌘⇧D down, ⌘] / ⌘[ to move between panes, ⌘⇧↩ to zoom one.
+**New tab** — **+** opens a menu: a project tab (⌘T), a terminal tab (⌘⇧T) or a text tab (⌘N).
 
-![A terminal tab split in two: git log and diff in one shell, git status in the other](docs/images/fusion-terminals.png)
+**Terminal tabs** — plain shells, split like iTerm: ⌘D right, ⌘⇧D down, ⌘] / ⌘[ to move between panes, ⌘⇧↩ to zoom one. New shells start in the folder set in Settings (`~/code` at first).
+
+**Text tabs** — a page for notes, in Markdown formatted as you type, as Slack does: headings, **bold**, lists, `code`, and code blocks drawn as a box (their ``` fences hide when the cursor is outside). The two buttons at the top right make the selection code or a code block. The tab takes its name from the first line, and the text is kept across restarts.
 
 **Zoom a block** — double-click any pane, terminal or split to fill the tab with it; double-click again to bring the layout back.
 
-**Code panes** — file tree with git colours, editor with an inline diff against HEAD (green/red, ⌥F5 for the next change, *revert* per chunk). Files reload when they change on disk, so you watch Claude's edits as they happen, and save themselves a second after you type. **Search** (⌘⇧F) finds text in the whole project, with match case, whole word and regular expressions; `.gitignore` is honoured. The branch chip switches branches, checks out remote ones, and creates a branch (and pushes it). The GitHub button opens the file at the cursor's line (⌥-click copies the link); right-click a line for **Open on GitHub**. Drag the line between panes to resize them.
+**Code panes** — file tree with git colours, the open file's name in the header (× closes it), editor with an inline diff against HEAD (green/red, ⌥F5 for the next change, *revert* per chunk). Files reload when they change on disk, so you watch Claude's edits as they happen, and save themselves a second after you type. **Search** (⌘⇧F) finds text in the whole project, with match case, whole word and regular expressions; `.gitignore` is honoured. The branch chip switches branches, checks out remote ones, and creates a branch (and pushes it). The GitHub button opens the file at the cursor's line (⌥-click copies the link); right-click a line for **Open on GitHub**. Drag the line between panes to resize them.
 
-**Terminal header** — **pull** runs `git pull` in the tab's projects (it lights up blue with a ↓ count when the remote has new commits; Fusion fetches quietly every 3 minutes). When claude or another program is in the terminal, the pull runs in the background instead (fast-forward only) and lists the result per project. **snap** (⌘⇧2) captures a screen area to the clipboard and pastes its path into the terminal. **claude** starts the tab's session. While claude runs, the header counts its tokens and what they would cost at Claude API list prices.
+**Terminal header** — **pull** runs `git pull` in the tab's projects (it lights up blue with a ↓ count when the remote has new commits; Fusion fetches quietly every 3 minutes). When claude or another program is in the terminal, the pull runs in the background instead (fast-forward only) and lists the result per project. The split button opens more shells beside the terminal, in the tab folder; drag the line between them to resize. ⌘⇧2 captures a screen area to the clipboard and pastes its path into the terminal.
+
+**Claude activity** — a tab where claude is working shows a breathing orange dot, and a small animation plays at the top right of the window (with a count when several tabs are busy; click it to go there). When claude finishes in a tab you are not looking at, its dot turns green until you open it. Settings can turn this off.
+
+**Window** — the block the cursor is in has a white edge. Double-click empty space in the sidebar to fold it (`[` brings it back). In the sidebar, **Collapse all** folds every project group. The gear at the bottom of the sidebar opens **Settings**, and the 𝑓 in the menu bar brings Fusion to the front.
 
 **Restore** — on restart, every terminal comes back in its folder and runs what it was running (`watch …`, `claude`, a pipeline), and each pane opens its file again. A `sudo` command is typed but not run.
 
 | Keys | |
 |---|---|
-| ⌘T / ⌘⇧T | New project tab / terminal tab |
+| ⌘T / ⌘⇧T / ⌘N | New project tab / terminal tab / text tab |
 | ⌘1 … ⌘9 | Go to tab |
 | ⌘K / ⌘⌥P | Jump to a tab or a project |
 | ⌘⇧A | List all tabs |
@@ -102,7 +117,7 @@ Each project tab has a folder in `~/Library/Application Support/dev.fusion.ide/t
 - Screenshots need Screen Recording permission for Fusion (System Settings → Privacy & Security).
 - The background fetch never asks for a password; a repo that needs one keeps its last known ↓ count.
 - No LSP or push of local commits yet (a new branch can be pushed from the branch menu).
-- The token cost is an estimate at list prices (`src-tauri/src/usage.rs`), not a bill.
+- The bottom of the sidebar shows the Claude plan's weekly limit, as `/usage` shows it, in percent used (`src-tauri/src/plan.rs`). Fusion reads them with the Claude Code login on this Mac; it is hidden without it.
 - Import from GitHub needs the GitHub CLI (`gh`), signed in; github.com only.
 
 ## Contributing

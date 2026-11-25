@@ -50,7 +50,7 @@ export function TabPalette({
       })
       .filter((r) => !t || [r.name, ...r.names].some((s) => s.toLowerCase().includes(t)))
       .sort((a, b) => (t ? rank(a.name) - rank(b.name) : 0) || order(a.tab) - order(b.tab))
-      .map(({ names, ...r }) => ({ ...r, sub: r.tab.kind === "terminal" ? "Terminal" : names.join("  ·  ") || "No projects" }));
+      .map(({ names, ...r }) => ({ ...r, sub: r.tab.kind === "terminal" ? "Terminal" : r.tab.kind === "note" ? "Text" : names.join("  ·  ") || "No projects" }));
     const projectRows: Row[] = t
       ? projects
           .filter((p) => p.name.toLowerCase().includes(t))
@@ -139,7 +139,7 @@ export function TabPalette({
                   >
                     <span className={["palette-tile flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-[7px] transition", i === at ? "palette-tile-on" : ""].join(" ")}>
                       <Icon
-                        name={r.kind === "project" ? "folder" : r.tab.kind === "terminal" ? "terminal" : "spark"}
+                        name={r.kind === "project" ? "folder" : r.tab.kind ?? "spark"}
                         className={["h-[13px] w-[13px] transition-colors", i === at ? "text-white" : "text-white/70"].join(" ")}
                       />
                     </span>

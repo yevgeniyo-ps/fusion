@@ -1,6 +1,7 @@
 // Fusion: one tab mixes several repos. The tab's terminal, and the Claude session in it,
 // see only those repos.
 
+mod atlantis;
 mod fsx;
 mod git;
 mod github;
@@ -73,6 +74,9 @@ fn main() {
         .manage(pty::Ptys::default())
         .manage(watch::Watches::default())
         .invoke_handler(tauri::generate_handler![
+            atlantis::atlantis_state,
+            atlantis::atlantis_run,
+            atlantis::atlantis_merge,
             plan::plan_usage,
             projects::projects_load,
             projects::project_add,

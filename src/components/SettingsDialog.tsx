@@ -29,11 +29,26 @@ const SECTIONS: { id: string; title: string; icon: IconName; render: (s: Setting
     render: (s, set) => (
       <Row
         title="Claude activity animation"
-        description="In the sidebar: an animation while claude thinks in any tab, and another when it finishes, with the tab to go to."
+        description="A dot on each tab where claude thinks (green when it finished), and a small animation at the top right."
         changed={s.activity !== DEFAULTS.activity}
         onReset={() => set("activity", DEFAULTS.activity)}
       >
         <Switch on={s.activity} onChange={(v) => set("activity", v)} label="Show the Claude activity animation" />
+      </Row>
+    ),
+  },
+  {
+    id: "plugins",
+    title: "Plugins",
+    icon: "atlantis",
+    render: (s, set) => (
+      <Row
+        title="Atlantis"
+        description="For repos with an atlantis.yaml: a button in the project pane opens a panel to plan, apply and unlock the branch's pull request (as PR comments) and to merge it."
+        changed={s.atlantis !== DEFAULTS.atlantis}
+        onReset={() => set("atlantis", DEFAULTS.atlantis)}
+      >
+        <Switch on={s.atlantis} onChange={(v) => set("atlantis", v)} label="Enable the Atlantis plugin" />
       </Row>
     ),
   },

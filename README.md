@@ -22,8 +22,8 @@ Fusion runs on Apple Silicon Macs with macOS 13 or later.
 ### From the release (no build tools)
 
 ```sh
-gh release download v0.2.5 -R yevgeniyo-ps/fusion -p '*.dmg'
-open Fusion_0.2.5_aarch64.dmg
+gh release download v0.2.6 -R yevgeniyo-ps/fusion -p '*.dmg'
+open Fusion_0.2.6_aarch64.dmg
 ```
 
 Drag **Fusion** to **Applications**, then open it from Launchpad or Spotlight.
@@ -76,7 +76,7 @@ Dev and release builds share the same data folder, so quit one before starting t
 
 **Terminal tabs** — plain shells, split like iTerm: ⌘D right, ⌘⇧D down, ⌘] / ⌘[ to move between panes, ⌘⇧↩ to zoom one. New shells start in the folder set in Settings (`~/code` at first).
 
-**Text tabs** — a page for notes, in Markdown formatted as you type, as Slack does: headings, **bold**, lists, `code`, and code blocks drawn as a box (their ``` fences hide when the cursor is outside). The two buttons at the top right make the selection code or a code block. The tab takes its name from the first line, and the text is kept across restarts.
+**Text tabs** — a page for notes, in Markdown formatted as you type, as Slack does: headings, **bold**, lists, `code`, and code blocks drawn as a box (their ``` fences hide once the block is closed, and come back while the cursor is in it). The two buttons at the top right make the selection code or a code block. The tab takes its name from the first line, and the text is kept across restarts.
 
 **Zoom a block** — double-click any pane, terminal or split to fill the tab with it; double-click again to bring the layout back.
 
@@ -87,6 +87,12 @@ Dev and release builds share the same data folder, so quit one before starting t
 **Claude activity** — a tab where claude is working shows a breathing orange dot, and a small animation plays at the top right of the window (with a count when several tabs are busy; click it to go there). When claude finishes in a tab you are not looking at, its dot turns green until you open it. Settings can turn this off.
 
 **Window** — the block the cursor is in has a white edge. Double-click empty space in the sidebar to fold it (`[` brings it back). In the sidebar, **Collapse all** folds every project group. The gear at the bottom of the sidebar opens **Settings**, and the 𝑓 in the menu bar brings Fusion to the front.
+
+**Plugins** — optional features, off until you turn them on in **Settings → Plugins**.
+
+- **Atlantis** — for Terraform repos run by [Atlantis](https://www.runatlantis.io/): a repo with an `atlantis.yaml` gets the Atlantis button in its pane header. It opens a panel at the right of the tab for the pull request of the branch you have checked out: the Atlantis projects the PR changes, **Plan**, **Apply** (asks once more) and **Unlock**, posted as PR comments with your `gh` login, then Atlantis's answers as cards — the plan's numbers, the output, and its suggested commands as one-click buttons; older answers fold away. **Merge** the PR from the same panel (squash, merge commit or rebase, and *bypass rules* when you are allowed to), as GitHub's button does.
+
+  ![The Atlantis panel beside a Terraform repo: a plan with its numbers and output, and the PR's merge box](docs/media/atlantis.png)
 
 **Restore** — on restart, every terminal comes back in its folder and runs what it was running (`watch …`, `claude`, a pipeline), and each pane opens its file again. A `sudo` command is typed but not run.
 
@@ -118,7 +124,7 @@ Each project tab has a folder in `~/Library/Application Support/dev.fusion.ide/t
 - The background fetch never asks for a password; a repo that needs one keeps its last known ↓ count.
 - No LSP or push of local commits yet (a new branch can be pushed from the branch menu).
 - The bottom of the sidebar shows the Claude plan's weekly limit, as `/usage` shows it, in percent used (`src-tauri/src/plan.rs`). Fusion reads them with the Claude Code login on this Mac; it is hidden without it.
-- Import from GitHub needs the GitHub CLI (`gh`), signed in; github.com only.
+- Import from GitHub and the Atlantis plugin need the GitHub CLI (`gh`), signed in; github.com only.
 
 ## Contributing
 

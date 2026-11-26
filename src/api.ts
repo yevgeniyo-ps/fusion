@@ -31,6 +31,17 @@ export interface PlanUsage {
   seven_day: PlanLimit | null;
 }
 
+export interface AtlantisState {
+  projects: { name: string; dir: string }[];
+  /** Projects whose folder has a changed file in the PR. */
+  changed: string[];
+  pr: {
+    number: number; url: string; title: string; state: string; head: string;
+    draft: boolean; base: string; mergeable: string; merge_state: string; review: string;
+  } | null;
+  comments: { author: string; body: string; created_at: string; url: string; bot: boolean }[];
+}
+
 export const api = {
   projectsLoad: () => invoke<Project[]>("projects_load"),
   projectAdd: (path: string) => invoke<Project>("project_add", { path }),
@@ -75,6 +86,12 @@ export const api = {
   /** `plain`: a shell in `cwd`, else the home folder (a terminal tab's pane), not in the tab folder. */
   /** The Claude plan's limits (src-tauri/src/plan.rs); null when they cannot be read. */
   planUsage: () => invoke<PlanUsage | null>("plan_usage"),
+  atlantisState: (path: string) => invoke<AtlantisState>("atlantis_state", { path }),
+  /** Posts an Atlantis command (plan, apply, unlock, optional -p) as a comment on the PR. */
+  atlantisRun: (path: string, number: number, command: string) => invoke<void>("atlantis_run", { path, number, command }),
+  /** gh pr merge: squash, merge or rebase; admin bypasses the branch rules. */
+  atlantisMerge: (path: string, number: number, method: "squash" | "merge" | "rebase", admin: boolean) =>
+    invoke<void>("atlantis_merge", { path, number, method, admin }),
   ptySpawn: (id: string, cols: number, rows: number, plain: boolean, cwd: string | null, run: string | null, onEvent: Channel<PtyEvent>) =>
     invoke<void>("pty_spawn", { id, cols, rows, plain, cwd, run, onEvent }),
   /** What each shell runs now: its folder and its foreground command. */

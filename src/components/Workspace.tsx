@@ -6,6 +6,8 @@ import { Pane } from "./Pane";
 import { Terminal } from "./Terminal";
 import { ProjectTerminal } from "./ProjectTerminal";
 import { Grip } from "./Grip";
+import { AtlantisPanel } from "./AtlantisPanel";
+import { useSetting } from "../lib/settings";
 
 interface Props {
   tab: Tab;
@@ -39,6 +41,40 @@ export function Workspace({ tab, name, projects, active, split, onSplit, onRemov
     if (codeZoomed && zoom && !opened.includes(zoom)) setOpened((o) => [...o, zoom]);
   }, [codeZoomed, zoom, opened]);
   const termProjects = projects.filter((p) => opened.includes(p.path));
+
+  // The Atlantis plugin's panel: a column at the right of the tab, top to bottom, for one
+  // project. Its width is kept (localStorage) and a drag on its left edge changes it.
+  const atlantisOn = useSetting("atlantis");
+  const [atlantisRaw, setAtlantis] = useState<string | null>(null);
+  const atlantis = atlantisOn ? (projects.find((p) => p.path === atlantisRaw) ?? null) : null;
+  const [atlantisWidth, setAtlantisWidth] = useState(() => {
+    try {
+      return Number(localStorage.getItem("fusion.atlantisWidth")) || 480;
+    } catch {
+      return 480;
+    }
+  });
+  const dragAtlantis = (e: React.PointerEvent) => {
+    e.preventDefault();
+    const x0 = e.clientX;
+    const w0 = atlantisWidth;
+    let w = w0;
+    const move = (ev: PointerEvent) => {
+      w = Math.min(900, Math.max(340, w0 + x0 - ev.clientX));
+      setAtlantisWidth(w);
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      try {
+        localStorage.setItem("fusion.atlantisWidth", String(Math.round(w)));
+      } catch {
+        // Not kept: the default width next time.
+      }
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
 
   // Each change to the set of projects rewrites the tab folder (and restarts the tab's claude).
   const key = projects.map((p) => p.path).join("\n");
@@ -90,10 +126,8 @@ export function Workspace({ tab, name, projects, active, split, onSplit, onRemov
 
   return (
     // A grey frame; each block has an edge (.tab-edge): black, white on the active one.
-    <div
-      ref={box}
-      className={active ? "absolute inset-0 flex flex-col pb-3 pl-[var(--gap-left)] pr-3 pt-1.5" : "hidden"}
-    >
+    <div className={active ? "absolute inset-0 flex pb-3 pl-[var(--gap-left)] pr-3 pt-1.5" : "hidden"}>
+    <div ref={box} className="flex min-w-0 flex-1 flex-col">
       <div
         ref={(el) => {
           setNodeRef(el);
@@ -118,6 +152,8 @@ export function Workspace({ tab, name, projects, active, split, onSplit, onRemov
                   file={tab.files?.[p.path] ?? null}
                   onFile={(f) => onFile(p.path, f)}
                   onZoom={() => toggle(p.path)}
+                  atlantis={atlantis?.path === p.path}
+                  onAtlantis={() => setAtlantis((a) => (a === p.path ? null : p.path))}
                 />
               </div>
               {i < projects.length - 1 && !zoom && (
@@ -152,6 +188,17 @@ export function Workspace({ tab, name, projects, active, split, onSplit, onRemov
       <div className={["min-h-0 flex-1", codeZoomed ? "hidden" : ""].join(" ")}>
         <Terminal tabId={tab.id} dir={dir} active={active} projects={projects} sideTerms={tab.sideTerms ?? []} onSideTerms={onSideTerms} zoomed={zoom === "terminal"} hidden={codeZoomed} onZoom={() => toggle("terminal")} />
       </div>
+    </div>
+    {atlantis && (
+      <>
+        <div onPointerDown={dragAtlantis} className="group flex w-4 shrink-0 cursor-col-resize items-center justify-center">
+          <Grip vertical />
+        </div>
+        <div style={{ width: atlantisWidth }} className="flex min-h-0 shrink-0">
+          <AtlantisPanel key={atlantis.path} project={atlantis} live={active} onClose={() => setAtlantis(null)} />
+        </div>
+      </>
+    )}
     </div>
   );
 }

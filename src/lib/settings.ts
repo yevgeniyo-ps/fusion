@@ -6,13 +6,16 @@ import { useEffect, useState } from "react";
 export interface Settings {
   /** Where a terminal tab's new shell starts (`~/` allowed). */
   termDir: string;
-  /** The animation in the sidebar while claude thinks and when it finishes. */
+  /** The tab dots and the animation in the tab bar while claude thinks and when it finishes. */
   activity: boolean;
+  /** Plugin: Atlantis (plan, apply and merge a Terraform PR) in repos with atlantis.yaml. */
+  atlantis: boolean;
 }
 
 export const DEFAULTS: Settings = {
   termDir: "~/code",
   activity: true,
+  atlantis: false,
 };
 
 const KEY = "fusion.settings";
